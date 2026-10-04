@@ -1,0 +1,628 @@
+/* Self-hosted fonts (SIL OFL, licences next to the files) — no external requests */
+@font-face {
+  font-family: 'Grenze Gotisch';
+  src: url('../assets/fonts/GrenzeGotisch-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Spectral';
+  src: url('../assets/fonts/Spectral-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Spectral';
+  src: url('../assets/fonts/Spectral-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Spectral';
+  src: url('../assets/fonts/Spectral-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* ------------------------------------------------------------------
+   Tokens
+   The accent follows the active realm (frost / ember / roots / storm),
+   registered with @property so it fades instead of snapping.
+------------------------------------------------------------------- */
+@property --accent {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #a9dce6;
+}
+
+:root {
+  --bone: #ece4d3;          /* main text, weathered bone */
+  --mist: #a9b2b4;          /* secondary text */
+  --night: #0f161d;         /* fallback background, fjord at night */
+  --ink: #12171c;           /* text on accent buttons */
+  --shade: 7 10 14;         /* rgb triplet for washes and shadows */
+
+  --display: 'Grenze Gotisch', Georgia, 'Times New Roman', serif;
+  --body: 'Spectral', Georgia, 'Times New Roman', serif;
+
+  --index: calc(1vw + 1vh); /* same scale unit as the original site */
+  --frame: 1240px;
+  --gutter: clamp(1.25rem, 4vw, 3rem);
+
+  --ease-io: cubic-bezier(.65, 0, .35, 1);
+  --ease-out: cubic-bezier(.2, .7, .2, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--night);
+  color: var(--bone);
+  font-family: var(--body);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------
+   Stage + parallax slider (same structure as Basic3D)
+------------------------------------------------------------------- */
+.stage {
+  position: relative;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  --px: 0;
+  --py: 0;
+  transition: --accent 1.4s ease;
+}
+
+.slider {
+  height: 100%;
+}
+
+/* Active slide is pushed in, leaving slides settle back — the original zoom
+   (Basic3D used 1.25; 1.15 keeps more of the foreground layer in frame). */
+.slider__item {
+  overflow: hidden;
+  background: var(--night);
+  transform: scale(1.15) !important;
+  transition: transform 2s ease !important;
+}
+
+.slider__item:not(.swiper-slide-active) {
+  transform: scale(1) !important;
+}
+
+.slider__layer {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+/* Pointer drift sits on an inner box so it never fights Swiper's transform. */
+.slider__img {
+  position: absolute;
+  inset: -3%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transform: translate3d(
+    calc(var(--px) * var(--drift) * -1px),
+    calc(var(--py) * var(--drift) * -0.6px),
+    0
+  );
+}
+
+/* ------------------------------------------------------------------
+   UI overlay
+------------------------------------------------------------------- */
+.ui {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  pointer-events: none;
+}
+
+/* Darkens top and bottom so the header and lore stay readable on any image. */
+.ui::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(to bottom, rgb(var(--shade) / .6), transparent 24%, transparent 60%, rgb(var(--shade) / .8)),
+    radial-gradient(ellipse 55% 42% at 50% 56%, rgb(var(--shade) / .38), transparent 72%);
+}
+
+.ui a,
+.ui button {
+  pointer-events: auto;
+}
+
+/* ------------------------------------------------------------------
+   Header
+------------------------------------------------------------------- */
+.top {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  width: min(100%, var(--frame));
+  margin-inline: auto;
+  padding: clamp(1.25rem, 3.4vh, 2.5rem) var(--gutter);
+}
+
+.wordmark {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(1.7rem, 1rem + 1.5vw, 2.4rem);
+  line-height: 1;
+  text-decoration: none;
+}
+
+.top__nav {
+  margin-left: auto;
+}
+
+.top__nav ul {
+  display: flex;
+  gap: clamp(1.25rem, 2.4vw, 2.25rem);
+  list-style: none;
+}
+
+.top__nav a {
+  position: relative;
+  display: inline-block;
+  padding-block: .35rem;
+  color: var(--mist);
+  font-size: .98rem;
+  text-decoration: none;
+  transition: color .3s ease;
+}
+
+.top__nav a:hover,
+.top__nav a[aria-current] {
+  color: var(--bone);
+}
+
+.top__nav a[aria-current]::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--accent);
+}
+
+.top__cta {
+  padding: .6rem 1.2rem;
+  border: 1px solid var(--accent);
+  border-radius: 0 .9rem 0 .9rem;
+  font-size: .98rem;
+  text-decoration: none;
+  transition: background-color .3s ease, color .3s ease;
+}
+
+.top__cta:hover {
+  background: var(--accent);
+  color: var(--ink);
+}
+
+/* Menu toggle: two bars that cross into an X */
+.menu-btn {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  place-content: center;
+  gap: 7px;
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.menu-btn i {
+  display: block;
+  width: 26px;
+  height: 2px;
+  background: var(--bone);
+  transition: transform .45s var(--ease-io);
+}
+
+.menu-btn.is-open i:first-of-type {
+  transform: translateY(4.5px) rotate(45deg);
+}
+
+.menu-btn.is-open i:last-of-type {
+  transform: translateY(-4.5px) rotate(-45deg);
+}
+
+.menu {
+  position: fixed;
+  inset: 0 0 0 auto;
+  z-index: 2;
+  width: min(27rem, 100%);
+  padding: clamp(5.5rem, 12vh, 7rem) 2.5rem 2.5rem;
+  background: rgb(12 16 21 / .9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-left: 1px solid rgb(236 228 211 / .12);
+  pointer-events: auto;
+  visibility: hidden;
+  transform: translateX(100%);
+  transition: transform .7s var(--ease-io), visibility 0s linear .7s;
+}
+
+.menu.is-open {
+  visibility: visible;
+  transform: none;
+  transition: transform .7s var(--ease-io);
+}
+
+.menu__heading {
+  color: var(--mist);
+  font-style: italic;
+  margin-bottom: 1rem;
+}
+
+.menu__realms {
+  list-style: none;
+}
+
+.menu__realms button {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  width: 100%;
+  padding: .35rem 0;
+  background: none;
+  border: 0;
+  color: var(--bone);
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(2.2rem, 1.6rem + 2vw, 3rem);
+  line-height: 1.15;
+  text-align: left;
+  cursor: pointer;
+  opacity: .6;
+  transition: opacity .3s ease;
+}
+
+.menu__realms button:hover,
+.menu__realms button[aria-current] {
+  opacity: 1;
+}
+
+.menu__realms .numeral {
+  min-width: 2.4rem;
+  font-size: 1rem;
+}
+
+.menu__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgb(236 228 211 / .14);
+  list-style: none;
+}
+
+.menu__links a {
+  color: var(--mist);
+  text-decoration: none;
+}
+
+.menu__links a:hover {
+  color: var(--bone);
+}
+
+/* ------------------------------------------------------------------
+   Hero: one realm visible at a time, all stacked in the same cell
+------------------------------------------------------------------- */
+.hero {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  min-height: 0;
+}
+
+.realm {
+  grid-area: 1 / 1;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-inline: var(--gutter);
+}
+
+.realm--active {
+  z-index: 1;
+}
+
+.realm:not(.realm--active) * {
+  pointer-events: none !important;
+}
+
+.realm__title {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: calc(var(--index) * 9.4);
+  line-height: .9;
+  /* first letter also overlaps leftwards; give it the room back */
+  padding-left: calc(var(--index) * 1.1);
+  white-space: nowrap;
+}
+
+/* Stacked carved letters — each one casts its shadow onto the next */
+.letter {
+  position: relative;
+  display: inline-block;
+  margin-left: calc(var(--index) * -1.1);
+  text-shadow: calc(var(--index) * .7) 0 calc(var(--index) * 1) rgb(0 0 0 / .5);
+  opacity: 0;
+  transform: translate3d(0, -1.6em, 0);
+  transition:
+    opacity var(--d) var(--ease-io),
+    transform var(--d) var(--ease-io);
+}
+
+.realm--after .letter {
+  transform: translate3d(0, 1.6em, 0);
+}
+
+.realm--active .letter {
+  opacity: 1;
+  transform: none;
+}
+
+.realm__info {
+  max-width: 34rem;
+  margin-top: clamp(.75rem, 2.6vh, 1.75rem);
+  opacity: 0;
+  transform: translateY(-3rem);
+  transition: opacity .9s ease, transform 1.25s var(--ease-out);
+}
+
+.realm--after .realm__info {
+  transform: translateY(3rem);
+}
+
+.realm--active .realm__info {
+  opacity: 1;
+  transform: none;
+  transition-delay: .35s;
+}
+
+.realm__info p {
+  font-size: clamp(1rem, .92rem + .35vw, 1.2rem);
+  line-height: 1.7;
+  text-shadow: 0 1px 18px rgb(0 0 0 / .65);
+}
+
+.button {
+  display: inline-block;
+  margin-top: 1.75rem;
+  padding: .95rem 2rem;
+  background: var(--accent);
+  color: var(--ink);
+  border-radius: 0 1.25rem 0 1.25rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: transform .3s var(--ease-out), box-shadow .3s ease;
+}
+
+.button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px -14px var(--accent);
+}
+
+/* ------------------------------------------------------------------
+   Journey bar
+------------------------------------------------------------------- */
+.realms {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  width: min(100%, var(--frame));
+  margin-inline: auto;
+  padding: 0 var(--gutter) clamp(1.25rem, 4vh, 2.75rem);
+}
+
+.realms__list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 9.5rem));
+  gap: .75rem;
+  list-style: none;
+}
+
+.realms__item {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: .55rem;
+  width: 100%;
+  padding: 1rem 0 .25rem;
+  background: none;
+  border: 0;
+  color: var(--mist);
+  font: inherit;
+  font-size: .98rem;
+  text-align: left;
+  cursor: pointer;
+  transition: color .3s ease;
+}
+
+.realms__item::before,
+.realms__item::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+}
+
+.realms__item::before {
+  height: 1px;
+  background: rgb(236 228 211 / .3);
+}
+
+.realms__item::after {
+  top: -1px;
+  height: 3px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1.4s var(--ease-io), opacity .6s ease;
+}
+
+.realms__item.is-past::after {
+  transform: scaleX(1);
+  opacity: .35;
+}
+
+.realms__item.is-active::after {
+  transform: scaleX(1);
+  opacity: 1;
+}
+
+.realms__item:hover,
+.realms__item.is-active {
+  color: var(--bone);
+}
+
+.numeral {
+  min-width: 1.9em;
+  color: var(--accent);
+  font-family: var(--body);
+  font-weight: 500;
+  letter-spacing: .04em;
+}
+
+.realms__hint {
+  max-width: 15rem;
+  color: var(--mist);
+  font-size: .88rem;
+  font-style: italic;
+  text-align: right;
+}
+
+/* ------------------------------------------------------------------
+   Responsive
+------------------------------------------------------------------- */
+@media (min-width: 861px) {
+  .menu-btn {
+    margin-left: -.5rem;
+  }
+}
+
+@media (max-width: 860px) {
+  .top__nav,
+  .top__cta,
+  .realms__hint {
+    display: none;
+  }
+
+  .menu-btn {
+    margin-left: auto;
+  }
+
+  .realms__list {
+    width: 100%;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .realm__info {
+    max-width: 30rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .realms__name {
+    display: none;
+  }
+
+  .realm__title {
+    font-size: clamp(4.5rem, 30vw, 8.5rem);
+  }
+
+  .button {
+    margin-top: 1.25rem;
+  }
+}
+
+@media (max-height: 640px) and (min-width: 561px) {
+  .realm__title {
+    font-size: calc(var(--index) * 7.4);
+  }
+
+  .realm__info p {
+    font-size: 1rem;
+    line-height: 1.55;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Reduced motion: keep the layers, drop the travel and zoom
+------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .slider__item,
+  .slider__item:not(.swiper-slide-active) {
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .letter,
+  .realm__info,
+  .realm--after .letter,
+  .realm--after .realm__info {
+    transform: none !important;
+    transition: opacity .4s ease !important;
+    transition-delay: 0s !important;
+  }
+
+  .stage {
+    transition: none;
+  }
+}

@@ -1,0 +1,7 @@
+# for split_layers.py
+pillow>=10.0
+numpy>=1.24
+transformers>=4.45
+torch>=2.1
+# only for make_placeholders.py
+opencv-python>=4.8
